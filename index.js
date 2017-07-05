@@ -19,16 +19,19 @@ exports.open = function(filepath, opts, cb) {
     if (isGzip(database)) {
       return cb(new Error('Looks like you are passing in a file in gzip format, please use mmdb database instead.'));
     }
-    var reader = new Reader(database, opts);
-    if (opts && !!opts.watchForUpdates) {
-      fs.watch(filepath, function() {
-        fs.readFile(filepath, function(err, database) {
-          if (err) return cb(err);
-          reader.load(database);
-        });
-      });
+    var reader = null;
+    try {
+      reader = new Reader(database, opts);
     }
-    cb(null, reader);
+    catch( readerErr ) {
+      return cb( readerErr );
+    }
+
+    if( reader == null ) {
+      return cb( "no_reader" );
+    }
+
+    return cb( null, reader );
   });
 };
 
